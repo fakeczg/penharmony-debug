@@ -1,0 +1,52 @@
+e2000-uboot:
+setenv bootargs console=ttyAMA1,115200 earlycon=p1011,0x2800d000 root=/dev/ram0 elevator=deadline rootwait rw loglevel=6 hardware=e2000 rootfstype=ext4 initrd=0x93000000,90M
+setenv bootcmd "ext4load scsi 0:1 0x90100000 e2000q-demo-board.dtb;ext4load scsi 0:1 0x90200000 Image;ext4load scsi 0:1 0x93000000 ramdisk.img;booti 0x90200000 - 0x90100000";boot
+ext4load scsi 0:1 0x90100000 e2000q-demo-board.dtb
+ext4load scsi 0:1 0x90200000 Image
+ext4load scsi 0:1 0x93000000 ramdisk.img
+booti 0x90200000 - 0x90100000
+
+d2000-uboot:
+setenv bootargs console=ttyAMA1,115200 earlycon=p1011,0x28001000 root=/dev/ram0 elevator=deadline rootwait rw loglevel=7 hardware=d2000 rootfstype=ext4 initrd=0x93000000,90M
+setenv bootcmd "ext4load scsi 0:1 0x90100000 d2000-devboard-dsk.dtb;ext4load scsi 0:1 0x90200000 Image;ext4load scsi 0:1 0x93000000 ramdisk.img;booti 0x90200000 - 0x90100000";boot
+
+debug command:
+#hdc
+# device config:
+ifconfig eth0 10.31.94.242
+# 查询hdc参数
+param get | grep hdc
+# 设置hdc参数
+param set persist.hdc.mode tcp
+param set persist.hdc.port 9527
+# 启动hdcd服务
+hdcd &
+# pc set
+
+mount -o remount,rw  /
+service_control stop render_service
+service_control start render_service
+/data/modetest -M dc -s 53@37:1920x1080 -v
+/data/modetest -M dc -s 53@37:1920x1080 -a
+/data/modetest -M dc -p
+/data/modetest -M dc -a -s 53@37:1920x1080 -P 31@37:1920x1080 -Ftiles
+/data/modetest -M dc -s 53@37:1920x1080 
+echo 0x14 > /sys/module/drm/parameters/debug
+echo 0x114 > /sys/module/drm/parameters/debug
+param set rosen.dump.rendernode 2
+param set rosen.dump.surfacebuffer 2
+
+hilog -b D
+hilog -L D  | grep -i "set the fence"
+hilog -T DISP_PHYTIUM
+
+e2000:
+backup:
+bootargs=console=ttyAMA1,115200 audit=0 earlycon=pl011,0x2800d000 root=/dev/xxxx rw
+bootcmd=fatload nvme 0:1 0x90100000 Image; fatload nvme 0:1 0x90000000 e2000q-demo-board.dtb; booti 0x90100000 -:- 0x90000000
+
+setenv bootargs console=ttyAMA1,115200  audit=0 earlycon=pl011,0x2800d000 root=/dev/sda2 rw;
+setenv bootcmd "ext4load scsi 0:1 0x90100000 Image; ext4load scsi 0:1 0x90000000 e2000q-demo-board.dtb; booti 0x90100000 -:- 0x90000000";boot
+ext4load scsi 0:1 0x90100000 Image;
+ext4load scsi 0:1 0x90000000 e2000q-demo-board.dtb;
+booti 0x90100000 - 0x90000000
